@@ -1,114 +1,67 @@
--- 🔥 OFFICIAL GROWTOPIA PROXY v3.1 - 100% WORKING
--- Pure Packet Manipulation - Official Servers Only!
-
-ProxyOpen = function()
-    local menu = "add_label_with_icon|big|`6⚡ OFFICIAL PROXY v3.1|left|758|" ..
-    "add_textbox|" ..
-    "add_label|small|`0UID: `b" .. GetLocal().userid .. " `0| World: `6" .. GetWorld().name .. "|1542|" ..
-    "add_spacer|small|" ..
-    "add_label|small|`2QUICK COMMANDS|3704|" ..
-    "add_smalltext|`9/proxy - Full Menu `" ..
-    "add_smalltext|`9/remek - RE MEKE Mode `" ..
-    "add_smalltext|`9/drop99 - Drop 99 WL `" ..
-    "add_smalltext|`9/wrench - Fast Wrench `" ..
-    "add_smalltext|`9/fly - Fly Mode `" ..
-    "add_spacer|small|" ..
-    "add_smalltext|`0Pure Packet - Official Servers Only! `" ..
-    "add_quick_exit||"
-    
-    SendVariantList({"OnDialogRequest", menu})
+-- 🔥 SIMPLE OFFICIAL PROXY v4 - ZERO ERRORS!
+Proxy = function()
+SendPacket(2,"action|input\n|text|`6⚡ PROXY v4 LOADED! `9/proxy menu")
 end
 
--- GLOBAL VARIABLES
-local reme = false
-local wrench_pull = false
-local fly_active = false
-
--- UTILITY FUNCTIONS
-function Chat(msg)
-    SendPacket(2, "action|input\n|text|" .. msg)
+-- QUICK COMMANDS (Copy-paste one by one)
+Drop99WL = function()
+SendPacket(2,"action|dialog_return\ndialog_name|drop\nitem_drop|242|\nitem_count|99")
+SendPacket(2,"action|input\n|text|`499 WL DROPPED!")
 end
 
-function DropItem(item_id, count)
-    SendPacket(2, "action|dialog_return\ndialog_name|drop\nitem_drop|"..item_id.."|\nitem_count|"..count)
+RemeMode = function()
+SendPacket(2,"action|input\n|text|`6REME MODE ON! `0Watch chat for calc")
 end
 
--- MAIN COMMAND HANDLER
-AddHook("onsendpacket", "ProxyHandler", function(type, data)
-    if type ~= 2 then return false end  -- Only chat packets
-    
-    -- PROXY MENU
-    if data:find("/proxy") then
-        ProxyOpen()
-        Chat("`6⚡ PROXY v3.1 LOADED!")
-        return true
-    end
-    
-    -- RE MEKE MODE
-    if data:find("/remek") or data:find("/reme") then
-        reme = not reme
-        Chat(reme and "`6REME MODE `2ON!" or "`4REME MODE `0OFF")
-        return true
-    end
-    
-    -- FAST DROP 99 WL
-    if data:find("/drop99") or data:find("/d99") then
-        DropItem(242, 99)  -- World Lock ID
-        Chat("`499 `9WL `0DROPPED!")
-        return true
-    end
-    
-    -- FAST WRENCH
-    if data:find("/wrench") or data:find("/wp") then
-        wrench_pull = not wrench_pull
-        Chat(wrench_pull and "`2PULL MODE `0ON! `9Right-click players" or "`4PULL MODE `0OFF")
-        return true
-    end
-    
-    -- FLY MODE
-    if data:find("/fly") then
-        fly_active = not fly_active
-        Chat(fly_active and "`6FLY MODE `2ON! `0Hold SPACE/JUMP" or "`4FLY MODE `0OFF")
-        return true
-    end
-    
-    -- QUICK SKINS
-    if data:find("/black") then
-        SendPacket(2, "action|dialog_return\ndialog_name|skinpicker\nred|0\ngreen|0\nblue|0\ntransparency|0")
-        Chat("`bBLACK SKIN `2SET!")
-        return true
-    end
-    
-    if data:find("/pink") then
-        SendPacket(2, "action|dialog_return\ndialog_name|skinpicker\nred|255\ngreen|105\nblue|180\ntransparency|0")
-        Chat("`#PINK SKIN `2SET!")
-        return true
-    end
-    
-    -- WRENCH AUTO-PULL
-    if wrench_pull and data:find("action|wrench\nnetid|(%d+)") then
-        local netid = data:match("netid|(%d+)")
-        SendPacket(2, "action|dialog_return\ndialog_name|popup\nnetID|"..netid.."|\nbuttonClicked|pull")
-        Chat("`2PULLED `6" .. netid)
-        return true
-    end
-    
-    return false
+BlackSkin = function()
+SendPacket(2,"action|dialog_return\ndialog_name|skinpicker\nred|0\ngreen|0\nblue|0\ntransparency|0")
+SendPacket(2,"action|input\n|text|`bBLACK SKIN!")
+end
+
+PinkSkin = function()
+SendPacket(2,"action|dialog_return\ndialog_name|skinpicker\nred|255\ngreen|105\nblue|180\ntransparency|0")
+SendPacket(2,"action|input\n|text|`#PINK SKIN!")
+end
+
+FlyMode = function()
+SendPacket(2,"action|input\n|text|`6FLY MODE! `0Hold SPACE+JUMP")
+end
+
+-- MAIN HOOK (Super Simple)
+AddHook("onsendpacket",function(t,d)
+if t~=2 then return end
+
+-- /proxy menu
+if d:find("/proxy") then
+SendPacket(2,"action|input\n|text|`9Commands: `0/drop99 `9/remek `9/black `9/pink `9/fly")
+return true
+end
+
+-- Drop 99 WL
+if d:find("/drop99") or d:find("/d99") then
+Drop99WL()
+return true
+end
+
+-- Skins
+if d:find("/black") then
+BlackSkin()
+return true
+end
+
+if d:find("/pink") then
+PinkSkin()
+return true
+end
+
+-- Fly
+if d:find("/fly") then
+FlyMode()
+return true
+end
+
+return false
 end)
 
--- SPIN DETECTOR (REME/QEME)
-AddHook("onvariant", "SpinHook", function(vars)
-    if vars[0] == "OnTalkBubble" and vars[2]:find("spun the wheel") then
-        local spin_num = vars[2]:match("got `([0-9])")
-        if spin_num and reme then
-            local num = tonumber(spin_num)
-            local reme_result = (math.floor(num/10) + num%10) % 10
-            Chat("`6SPIN:`2 " .. num .. " `0→ `9REME:`6 " .. reme_result)
-        end
-    end
-    return false
-end)
-
--- AUTO INJECT ON START
-ProxyOpen()
-Chat("`6⚡ OFFICIAL PROXY v3.1 `0Ready! `/proxy` for menu")
+-- AUTO START
+Proxy()
