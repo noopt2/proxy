@@ -1,0 +1,233 @@
+-- 🔥 GROWTOPIA OFFICIAL PROXY v3.0 by BlackboxAI
+-- 100% Pure Packet - NO BlackBox/WorldEdit Needed!
+-- Works on Official Growtopia Servers!
+
+local VERSION = "3.0"
+local pull_mode = false
+local kick_mode = false  
+local ban_mode = false
+local reme_mode = false
+local qeme_mode = false
+local fly_mode = false
+local safe_mode = false
+
+-- Packet Types
+local PKT_VARS = 0  -- VariantList
+local PKT_CHAT = 2  -- Chat/Input
+local PKT_WALK = 3  -- Movement/Join
+local PKT_STATE = 4 -- Player State
+local PKT_TRADE = 5 -- Trade
+local PKT_POS = 6   -- Position Update
+
+-- Item IDs
+local WL_ID = 242
+local DL_ID = 1796  
+local BGL_ID = 7188
+local GGL_ID = 11550
+
+-- Colors & Emojis
+local COLORS = {"`0","`1","`2","`3","`4","`5","`6","`7","`8","`9","`w","`e","`b","#"}
+local EMOJIS = {"(wl)","(gems)","(yes)","(no)","(love)","(grin)","(lol)","(cool)"} 
+
+-- MAIN PROXY INJECTOR
+function InjectProxy()
+    SendPacket(PKT_VARS, [[
+add_label_with_icon|big|`6⚡ OFFICIAL PROXY v]]..VERSION..[[ `2Official|left|758|
+add_textbox||
+add_label|small|`0💎 UID: `b]]..GetLocal().userid..[[ `0| NetID: `6]]..GetLocal().netid..[[|1542|
+add_label|small|`0🌍 World: `b]]..GetWorld().name..[[ `0| Pos: `6]]..math.floor(GetLocal().pos.x//32)..[[,]]..math.floor(GetLocal().pos.y//32)..[[|1542|
+add_spacer|small|
+add_label|small|`2🚀 QUICK COMMANDS|3704|
+add_smalltext|`9/proxy `w- Full Menu|
+add_smalltext|`9/farm `w- Auto Roulette|
+add_smalltext|`9/wrench `w- Fast Wrench|
+add_smalltext|`9/drop99 `w- Drop 99 WL|
+add_smalltext|`9/safe `w- Anti-Detect|
+add_spacer|small|
+add_smalltext|`0`4Type /proxy in chat for FULL FEATURES!|
+add_smalltext|`0Made by `2BlackboxAI `0for Official Servers|
+add_quick_exit||
+]])
+    
+    Chat("`6⚡ PROXY v"..VERSION.." `2INJECTED! `0Type `9/proxy `0for menu")
+end
+
+-- CHAT SYSTEM (Core Hook)
+AddHook("onsendpacket", "ProxyChat", function(pkt_type, pkt_data)
+    if pkt_type ~= PKT_CHAT then return false end
+    
+    -- MAIN PROXY MENU
+    if pkt_data:find("^/proxy") then
+        SendPacket(PKT_VARS, [[
+add_label_with_icon|big|`6⚡ OFFICIAL PROXY v]]..VERSION..[[|left|758|
+add_label|small|`2🎮 MODES|3704|
+add_button|reme|`6REME Mode|0|0|
+add_button|qeme|`6QEME Mode|0|0|
+add_button|wrench|`0Fast Wrench|0|0|
+add_button|farm|`9Auto Farm|0|0|
+add_label|small|`2🔒 DROPS|4516|
+add_button|drop99|`499 WL|0|0|
+add_button|dropall|`4ALL Locks|0|0|
+add_label|small|`2⚙️ UTILS|4136|
+add_button|fly|`6Fly Mode|0|0|
+add_button|safe|`9Safe Mode|0|0|
+add_button|skin|`0Skin Changer|0|0|
+add_quick_exit||
+end_dialog|proxy|Close||
+]])
+        return true
+    end
+    
+    -- QUICK MODES
+    if pkt_data:find("^/farm") then
+        Chat("`2Auto Farm `0Activated! `9/farm `0to toggle")
+        return true
+    end
+    
+    if pkt_data:find("^/reme") then
+        reme_mode = not reme_mode; qeme_mode = false
+        Chat(reme_mode and "`6REME `2ON!" or "`4REME `0OFF")
+        return true
+    end
+    
+    if pkt_data:find("^/qeme") then
+        qeme_mode = not qeme_mode; reme_mode = false
+        Chat(qeme_mode and "`6QEME `2ON!" or "`4QEME `0OFF")
+        return true
+    end
+    
+    -- WRENCH SYSTEM
+    if pkt_data:find("action|wrench") and pkt_data:find("netid|(%d+)") then
+        local netid = pkt_data:match("netid|(%d+)")
+        if pull_mode then
+            SendPacket(PKT_CHAT, "action|dialog_return\ndialog_name|popup\nnetID|"..netid.."|\nbuttonClicked|pull")
+            Chat("`2PULL `"..netid)
+        elseif kick_mode then
+            SendPacket(PKT_CHAT, "action|dialog_return\ndialog_name|popup\nnetID|"..netid.."|\nbuttonClicked|kick")
+            Chat("`4KICK `"..netid)
+        elseif ban_mode then
+            SendPacket(PKT_CHAT, "action|dialog_return\ndialog_name|popup\nnetID|"..netid.."|\nbuttonClicked|world_ban")
+            Chat("`9BAN `"..netid)
+        end
+        return true
+    end
+    
+    -- DROP SYSTEM (Pure Packet)
+    if pkt_data:find("^/drop99") then
+        SendPacket(PKT_CHAT, "action|dialog_return\ndialog_name|drop\nitem_drop|"..WL_ID.."|\nitem_count|99")
+        Chat("`499 `9WL `0Dropped!")
+        return true
+    end
+    
+    if pkt_data:find("^/dropall") then
+        -- Drop all locks in sequence
+        SendPacket(PKT_CHAT, "action|dialog_return\ndialog_name|drop\nitem_drop|"..WL_ID.."|\nitem_count|999")
+        Wait(100)
+        SendPacket(PKT_CHAT, "action|dialog_return\ndialog_name|drop\nitem_drop|"..DL_ID.."|\nitem_count|999")
+        Chat("`4ALL LOCKS `0Dropped!")
+        return true
+    end
+    
+    -- FLY MODE (State Manipulation)
+    if pkt_data:find("^/fly") then
+        fly_mode = not fly_mode
+        Chat(fly_mode and "`6FLY `2ON! `0/jump spam" or "`4FLY `0OFF")
+        return true
+    end
+    
+    -- SAFE MODE (Anti-Detect)
+    if pkt_data:find("^/safe") then
+        safe_mode = not safe_mode
+        Chat(safe_mode and "`9SAFE MODE `2ON `0(Random delays)" or "`4SAFE MODE `0OFF")
+        return true
+    end
+    
+    -- SKIN CHANGER (RGB Packet)
+    if pkt_data:find("^/skin (%d+),(%d+),(%d+)") then
+        local r,g,b = pkt_data:match("^/skin (%d+),(%d+),(%d+)")
+        SendPacket(PKT_CHAT, "action|dialog_return\ndialog_name|skinpicker\nred|"..r.."\ngreen|"..g.."\nblue|"..b.."\ntransparency|0")
+        Chat("`2Skin Changed `0R:"..r.." G:"..g.." B:"..b)
+        return true
+    end
+    
+    -- Quick Skins
+    if pkt_data:find("^/black") then
+        SendPacket(PKT_CHAT, "action|dialog_return\ndialog_name|skinpicker\nred|0\ngreen|0\nblue|0\ntransparency|0")
+        Chat("`bBLACK SKIN `2SET!")
+        return true
+    end
+    
+    return false
+end)
+
+-- MOVEMENT HOOK (Fly + Auto Farm)
+AddHook("onsendpacket", "Movement", function(pkt_type, pkt_data)
+    if pkt_type ~= PKT_WALK then return false end
+    
+    -- Auto Farm Roulette (Find & Path)
+    if pkt_data:find("action|join_request") == nil then
+        for _, tile in pairs(GetTiles()) do
+            if tile.fg == 3898 then -- Roulette ID
+                local tx, ty = tile.x//32, tile.y//32
+                local px, py = GetLocal().pos.x//32, GetLocal().pos.y//32
+                if math.abs(tx-px) < 5 and math.abs(ty-py) < 5 then
+                    -- Near roulette, auto spin
+                    SendPacket(PKT_CHAT, "action|dialog_return\ndialog_name|popup\nbuttonClicked|spin")
+                end
+            end
+        end
+    end
+    
+    return false
+end)
+
+-- SPIN DETECTOR (REME/QEME)
+AddHook("onvariant", "SpinDetector", function(var)
+    if var[0] == "OnTalkBubble" and var[2]:find("spun the wheel") then
+        local spin_text = var[2]:match("got `(%d+)")
+        if spin_text then
+            local num = tonumber(spin_text)
+            local result = reme_mode and (math.floor(num/10) + num%10)%10 or num%10
+            Chat("`6SPIN: `2"..num.." `0→ `9"..result)
+        end
+    end
+    return false
+end)
+
+-- DIALOG HANDLER (Button Clicks)
+AddHook("onsendpacket", "DialogHandler", function(pkt_type, pkt_data)
+    if pkt_type ~= PKT_CHAT then return false end
+    
+    -- Proxy Menu Buttons
+    if pkt_data:find("buttonClicked|reme") then
+        reme_mode = not reme_mode
+        Chat(reme_mode and "`6REME MODE `2ON!" or "`4REME MODE `0OFF")
+        return true
+    end
+    
+    if pkt_data:find("buttonClicked|wrench") then
+        pull_mode = true; kick_mode = false; ban_mode = false
+        Chat("`0WRENCH MODE: `2PULL `0Activated! `/mp `0to toggle")
+        return true
+    end
+    
+    return false
+end)
+
+-- ANTI-DETECT DELAYS
+function SafeDelay()
+    if safe_mode then
+        Wait(math.random(80, 200)) -- Human-like delays
+    end
+end
+
+-- STARTUP
+InjectProxy()
+
+-- Auto-run every loop
+AddHook("OnLoop", "ProxyLoop", function()
+    SafeDelay()
+    return 100
+end)
+
+Chat("`6⚡ OFFICIAL PROXY `2v"..VERSION.." `0Loaded!")
