@@ -1,67 +1,39 @@
--- 🔥 SIMPLE OFFICIAL PROXY v4 - ZERO ERRORS!
-Proxy = function()
-SendPacket(2,"action|input\n|text|`6⚡ PROXY v4 LOADED! `9/proxy menu")
-end
+// 🔥 OFFICIAL PROXY v5 - CONSOLE EXECUTE
+function Proxy() {
+    console.log("⚡ PROXY v5 LOADED!");
+    
+    // Drop 99 WL
+    window.drop99 = function() {
+        game.sendPacket(2, "action|dialog_return\ndialog_name|drop\nitem_drop|242|\nitem_count|99");
+        game.chat("`499 WL DROPPED!");
+    };
+    
+    // Black Skin
+    window.blackSkin = function() {
+        game.sendPacket(2, "action|dialog_return\ndialog_name|skinpicker\nred|0\ngreen|0\nblue|0\ntransparency|0");
+        game.chat("`bBLACK SKIN!");
+    };
+    
+    // Pink Skin
+    window.pinkSkin = function() {
+        game.sendPacket(2, "action|dialog_return\ndialog_name|skinpicker\nred|255\ngreen|105\nblue|180\ntransparency|0");
+        game.chat("`#PINK SKIN!");
+    };
+    
+    // RE MEKE Detector
+    window.remeMode = function() {
+        game.hookPacket("OnTalkBubble", function(vars) {
+            if (vars[2].includes("spun the wheel") && vars[2].match(/got \`([0-9])\`/)) {
+                let num = parseInt(vars[2].match(/got \`([0-9])\`/)[1]);
+                let reme = (Math.floor(num/10) + num%10) % 10;
+                game.chat("`6SPIN: " + num + " → `9REME: " + reme);
+            }
+        });
+        game.chat("`6REME MODE ON!");
+    };
+    
+    game.chat("`9Commands: `0drop99() `9blackSkin() `9pinkSkin() `9remeMode()");
+}
 
--- QUICK COMMANDS (Copy-paste one by one)
-Drop99WL = function()
-SendPacket(2,"action|dialog_return\ndialog_name|drop\nitem_drop|242|\nitem_count|99")
-SendPacket(2,"action|input\n|text|`499 WL DROPPED!")
-end
-
-RemeMode = function()
-SendPacket(2,"action|input\n|text|`6REME MODE ON! `0Watch chat for calc")
-end
-
-BlackSkin = function()
-SendPacket(2,"action|dialog_return\ndialog_name|skinpicker\nred|0\ngreen|0\nblue|0\ntransparency|0")
-SendPacket(2,"action|input\n|text|`bBLACK SKIN!")
-end
-
-PinkSkin = function()
-SendPacket(2,"action|dialog_return\ndialog_name|skinpicker\nred|255\ngreen|105\nblue|180\ntransparency|0")
-SendPacket(2,"action|input\n|text|`#PINK SKIN!")
-end
-
-FlyMode = function()
-SendPacket(2,"action|input\n|text|`6FLY MODE! `0Hold SPACE+JUMP")
-end
-
--- MAIN HOOK (Super Simple)
-AddHook("onsendpacket",function(t,d)
-if t~=2 then return end
-
--- /proxy menu
-if d:find("/proxy") then
-SendPacket(2,"action|input\n|text|`9Commands: `0/drop99 `9/remek `9/black `9/pink `9/fly")
-return true
-end
-
--- Drop 99 WL
-if d:find("/drop99") or d:find("/d99") then
-Drop99WL()
-return true
-end
-
--- Skins
-if d:find("/black") then
-BlackSkin()
-return true
-end
-
-if d:find("/pink") then
-PinkSkin()
-return true
-end
-
--- Fly
-if d:find("/fly") then
-FlyMode()
-return true
-end
-
-return false
-end)
-
--- AUTO START
-Proxy()
+// RUN NOW
+Proxy();
